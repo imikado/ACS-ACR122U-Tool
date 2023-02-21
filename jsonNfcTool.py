@@ -7,6 +7,8 @@ from smartcard.ATR import ATR
 from smartcard.CardType import AnyCardType
 import sys
 import json
+import base64
+
 
 if len(sys.argv) < 2:
     print("usage: nfcTool.py <command>\nList of available commands: help, mute, unmute, getuid, info, loadkey, read, firmver")
@@ -151,10 +153,12 @@ elif type(COMMAND) == str:
 
         dataString = ''
 
-        for blockLoop in range(0, 16):
+        # blockLoop = sys.argv[2]
 
-            COMMAND = [0xFF, 0x86, 0x00, 0x00, 0x05, 0x01,
-                       0x00, blockLoop*4, 0x60, 0x00]
+        for blockLoop in range(0, 15):
+            COMMAND = [0xFF, 0x86, 0x00, 0x00, 0x05,
+                       0x01, 0x00, int(blockLoop)*4, 0x60, 0x00]
+
             data, sw1, sw2 = connection.transmit(COMMAND)
             if (sw1, sw2) == (0x90, 0x0):
 
@@ -167,7 +171,8 @@ elif type(COMMAND) == str:
                     str(blockLoop) + " failed. Trying as Key B"
 
                 COMMAND = [0xFF, 0x86, 0x00, 0x00, 0x05, 0x01,
-                           0x00, blockLoop*4, 0x61, 0x00]
+                           0x00, int(blockLoop)*4, 0x61, 0x00]
+
                 data, sw1, sw2 = connection.transmit(COMMAND)
                 if (sw1, sw2) == (0x90, 0x0):
 
@@ -181,15 +186,15 @@ elif type(COMMAND) == str:
                     # response
                     printJsonResponse(response)
 
-            for block in range(blockLoop*4, blockLoop*4+4):
+            for block in range(int(blockLoop)*4, int(blockLoop)*4+4):
                 COMMAND = [0xFF, 0xB0, 0x00]
                 COMMAND.append(block)
                 COMMAND.append(16)
+
                 data, sw1, sw2 = connection.transmit(COMMAND)
 
-                dataString += ''.join(chr(i) for i in data)
-
-                response['data'] = dataString
+                dataString += (''.join(chr(i)
+                               for i in data)).strip()
 
             if (sw1, sw2) == (0x90, 0x0):
 
@@ -198,6 +203,8 @@ elif type(COMMAND) == str:
             elif (sw1, sw2) == (0x63, 0x0):
                 response['status'] = 'Failed'
 
+        response['data'] = base64.b64encode(
+            dataString.encode("ascii", "ignore")).decode()
         # response
         printJsonResponse(response)
 
