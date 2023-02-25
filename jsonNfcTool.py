@@ -155,7 +155,9 @@ elif type(COMMAND) == str:
 
         # blockLoop = sys.argv[2]
 
-        for blockLoop in range(0, 15):
+        shouldLoop = True
+
+        for blockLoop in range(1, 15):
             COMMAND = [0xFF, 0x86, 0x00, 0x00, 0x05,
                        0x01, 0x00, int(blockLoop)*4, 0x60, 0x00]
 
@@ -193,8 +195,33 @@ elif type(COMMAND) == str:
 
                 data, sw1, sw2 = connection.transmit(COMMAND)
 
-                dataString += (''.join(chr(i)
-                               for i in data)).strip()
+                dataLoop = ''
+
+                for dataKey in data:
+                    charLoop = chr(dataKey)
+                    if dataKey == 0x00:
+                        shouldLoop = False
+                        continue
+                    if dataKey == 0xFE:
+                        # end
+                        shouldLoop = False
+                        break
+                    if dataKey == 0x03:
+                        charLoop = 'NDEF'
+                        shouldLoop = True
+
+                    if dataKey == 0xFD:
+                        charLoop = 'PROPR'
+
+                    dataLoop += charLoop
+
+                dataString += dataLoop
+
+                if shouldLoop == False:
+                    break
+
+            # if shouldLoop == False:
+            #    break
 
             if (sw1, sw2) == (0x90, 0x0):
 
@@ -203,8 +230,9 @@ elif type(COMMAND) == str:
             elif (sw1, sw2) == (0x63, 0x0):
                 response['status'] = 'Failed'
 
-        response['data'] = base64.b64encode(
-            dataString.encode("ascii", "ignore")).decode()
+        response['data'] = dataString
+
+        # print(dataString)
         # response
         printJsonResponse(response)
 
