@@ -222,8 +222,13 @@ elif type(COMMAND) == str:
 
                 dataString = ''
 
+                i = 0
                 for dataKey in data:
-                    if dataKey == 0x00 or dataKey == 0xFF or dataKey == 0x07 or dataKey == 0x80:
+                    i += 1
+                    if block == 4 and i < 8:
+                        continue
+
+                    if dataKey == 0x00 or dataKey == 0xFF:
                         # print('empty')
                         continue
                     elif dataKey == 0xFE:
