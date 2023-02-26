@@ -222,17 +222,32 @@ elif type(COMMAND) == str:
 
                 dataString = ''
 
+                shouldInterpretUrl = False
+
                 i = 0
                 for dataKey in data:
                     i += 1
                     # if block == 4 and i < 8:
                     #    continue
 
+                    if shouldInterpretUrl:
+                        if dataKey == 0x02:
+                            dataString += 'https://'
+                        elif dataKey == 0x04:
+                            dataString += 'https://www'
+
+                        shouldInterpretUrl = False
+                        continue
+
                     if dataKey == 0x00 or dataKey == 0xFF:
                         # print('empty')
                         continue
                     elif dataKey == 0xA4:
                         dataString += "\n"
+                    elif dataKey == 0x55:
+                        # url
+                        dataString += "\nURL:"
+                        shouldInterpretUrl = True
                     elif dataKey == 0xFE:
                         # dataString += '=END='
                         break
