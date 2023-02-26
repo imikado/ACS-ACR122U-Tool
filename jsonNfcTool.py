@@ -200,7 +200,8 @@ elif type(COMMAND) == str:
                 for dataKey in data:
                     charLoop = chr(dataKey)
                     if dataKey == 0x00:
-                        shouldLoop = False
+                        # empty
+                        # shouldLoop = False
                         continue
                     if dataKey == 0xFE:
                         # end
