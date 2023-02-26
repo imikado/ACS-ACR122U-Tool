@@ -225,8 +225,8 @@ elif type(COMMAND) == str:
                 i = 0
                 for dataKey in data:
                     i += 1
-                    if block == 4 and i < 8:
-                        continue
+                    # if block == 4 and i < 8:
+                    #    continue
 
                     if dataKey == 0x00 or dataKey == 0xFF:
                         # print('empty')
