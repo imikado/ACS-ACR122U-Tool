@@ -10,6 +10,11 @@ import json
 import base64
 
 
+def debug(text):
+    return
+    print('DEBUG '+str(text))
+
+
 if len(sys.argv) < 2:
     print("usage: nfcTool.py <command>\nList of available commands: help, mute, unmute, getuid, info, loadkey, read, firmver")
     sys.exit()
@@ -151,6 +156,7 @@ elif type(COMMAND) == str:
         # decrypt first block of sector with key. if succeed, sector is unlocked
         # if other sector is unlocked, previous sector is locked
 
+        globalDataString = ''
         dataString = ''
 
         # blockLoop = sys.argv[2]
@@ -197,32 +203,45 @@ elif type(COMMAND) == str:
 
                 dataLoop = ''
 
+                firstOctet = data[0]
+
+                debug('#:'+str(block))
+                debug(firstOctet)
+                if firstOctet == 0x00 and block > 4:
+                    continue
+                elif firstOctet == 0x00:
+                    debug('empty')
+                elif firstOctet == 0xFE:
+                    debug('end')
+                elif firstOctet == 0x03:
+                    debug('NDEF')
+                elif firstOctet == 0xFD:
+                    debug('PROPR')
+                debug(toHexString(data))
+                # print(''.join(chr(i) for i in data))
+
+                dataString = ''
+
                 for dataKey in data:
-                    charLoop = chr(dataKey)
-                    if dataKey == 0x00:
-                        # empty
-                        # shouldLoop = False
+                    if dataKey == 0x00 or dataKey == 0xFF or dataKey == 0x07 or dataKey == 0x80:
+                        # print('empty')
                         continue
-                    if dataKey == 0xFE:
-                        # end
-                        shouldLoop = False
+                    elif dataKey == 0xFE:
+                        # dataString += '=END='
                         break
-                    if dataKey == 0x03:
-                        charLoop = 'NDEF'
-                        shouldLoop = True
+                    elif dataKey == 0x03:
+                        continue
+                        # dataString += '=NDEF='
+                    elif dataKey == 0xFD:
+                        continue
+                        # dataString += '=PROPR='
+                    else:
+                        dataString += chr(dataKey)
 
-                    if dataKey == 0xFD:
-                        charLoop = 'PROPR'
+                debug(dataString)
+                globalDataString += dataString
 
-                    dataLoop += charLoop
-
-                dataString += dataLoop
-
-                if shouldLoop == False:
-                    break
-
-            # if shouldLoop == False:
-            #    break
+                continue
 
             if (sw1, sw2) == (0x90, 0x0):
 
@@ -231,7 +250,10 @@ elif type(COMMAND) == str:
             elif (sw1, sw2) == (0x63, 0x0):
                 response['status'] = 'Failed'
 
-        response['data'] = dataString
+        debug('######')
+        debug(globalDataString)
+
+        response['data'] = globalDataString
 
         # print(dataString)
         # response
