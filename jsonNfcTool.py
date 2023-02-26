@@ -231,6 +231,8 @@ elif type(COMMAND) == str:
                     if dataKey == 0x00 or dataKey == 0xFF:
                         # print('empty')
                         continue
+                    elif dataKey == 0xA4:
+                        dataString += "\n"
                     elif dataKey == 0xFE:
                         # dataString += '=END='
                         break
