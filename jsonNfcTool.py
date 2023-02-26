@@ -239,7 +239,7 @@ elif type(COMMAND) == str:
                         shouldInterpretUrl = False
                         continue
 
-                    if dataKey == 0x00 or dataKey == 0xFF:
+                    if dataKey == 0x00 or dataKey == 0xFF or dataKey == 0x11 or dataKey == 0x01:
                         # print('empty')
                         continue
                     elif dataKey == 0xA4:
